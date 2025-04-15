@@ -88,7 +88,11 @@ export default function Test() {
   };
 
   useEffect(() => {
-    if (session) fetchPosts();
+    if (session) {
+      fetchPosts();
+    } else {
+      setLoading(false);
+    }
   }, [session]);
 
   const formatDate = (createdAt: string | Date) => {
@@ -176,8 +180,8 @@ export default function Test() {
     return post.likes.some((like) => like.toString() === session.user.id);
   };
 
-  if (loading) {
-    <div>Loading...</div>;
+  if (loading && session?.user.id) {
+    return <div>Loading...</div>;
   }
 
   if (session) {
@@ -264,7 +268,7 @@ export default function Test() {
                 <div className="engagement flex gap-6 mb-2">
                   <div
                     onClick={() => handleLike(post._id)}
-                    className={`like flex items-center gap-1 cursor-pointer ${
+                    className={`like closesocket flex items-center gap-1 cursor-pointer ${
                       hasLiked(post) ? "text-red-500" : "text-gray-400 hover:text-red-500"
                     }`}
                   >
@@ -340,19 +344,30 @@ export default function Test() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="space-x-4">
-        <Link href="/login">
-          <button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-            Login
-          </button>
-        </Link>
-        <Link href="/register">
-          <button className="bg-green-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-            Sign In
-          </button>
-        </Link>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-800 to-black flex flex-col items-center justify-between px-4 py-8">
+      <div className="max-w-2xl text-center space-y-8">
+        <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight">
+          Welcome to Twitter
+        </h1>
+        <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
+          Twitter is your go-to platform for real-time conversations, sharing ideas, and staying connected with the world. Tweet your thoughts, follow trends, and join the global community.
+        </p>
+        <div className="flex justify-center gap-4">
+          <Link href="/login">
+            <button className="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-blue-700 transition-colors duration-300 shadow-lg">
+              Log In
+            </button>
+          </Link>
+          <Link href="/register">
+            <button className="bg-green-600 text-white px-8 py-3 rounded-full font-semibold text-lg hover:bg-green-700 transition-colors duration-300 shadow-lg">
+              Sign Up
+            </button>
+          </Link>
+        </div>
       </div>
+      <footer className="text-gray-500 text-sm">
+        Made by Rishav
+      </footer>
     </div>
   );
 }
