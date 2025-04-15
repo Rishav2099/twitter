@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import User from "@/models/User.model";
 import connectToDatabase from "@/lib/db";
 
-export async function GET (req: NextRequest, {params}: {params: {id: string}}) {
+export async function GET (req: NextRequest, {params}: { params: Promise<{ id: string }> }) {
    try {
     await connectToDatabase()
-     const userId = params.id
-     const user  = await User.findById(userId).populate('posts')
+     const {id} = await params
+     const user  = await User.findById(id).populate('posts')
   
      
  
