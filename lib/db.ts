@@ -30,7 +30,7 @@ export default async function connectToDatabase() {
 
   try {
     cached.conn = await cached.promise;
-  } catch (error) {
+  } catch {
     cached.promise = null;
     throw new Error("check database connection file");
   }

@@ -5,6 +5,7 @@ import Post, { IPost } from "@/models/Post.model"; // Your Post model
 import { uploadImage } from "@/lib/cloudinary"; // Your Cloudinary upload function
 import { NextRequest, NextResponse } from "next/server";
 import User from "@/models/User.model";
+import { ObjectId } from "mongoose";
 
 // POST handler for creating a post
 export async function POST(req: NextRequest) {
@@ -30,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     // Prepare post data
     const postData: Partial<IPost> = {
-      user: session.user.id as any, // Cast to ObjectId
+      user: session.user.id as object , 
       comments: [], // Initialize empty comments array
       likes: [], // Initialize empty likes array
     };

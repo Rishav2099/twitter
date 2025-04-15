@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
-const page = () => {
+const Page = () => {
   const { data: session, update } = useSession();
   const [name, setName] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -61,12 +61,10 @@ const page = () => {
         name: data.user.name,
         image: data.user.image,
       });
-
       alert("profile updated successfully!");
       setSelectedFile(null);
-    } catch (error) {
-      console.log("Error updating profile", error);
-      alert("failed to update profile");
+    } catch {
+      console.log("Error updating profile");
     } finally {
       setSaving(false);
     }
@@ -91,7 +89,7 @@ const page = () => {
   return (
     <div>
       <form
-        onSubmit={(e) => handleSubmit(e, session.user.id as any)}
+        onSubmit={(e) => handleSubmit(e, session.user.id)}
         className="flex mt-5 justify-center items-center flex-col text-white gap-3"
       >
         <div className="relative w-[100px] h-[100px]">
@@ -138,4 +136,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

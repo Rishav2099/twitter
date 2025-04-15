@@ -14,7 +14,7 @@ const LoginPage = () => {
     try {
       setIsLoading(true);
       await signIn('google', { callbackUrl: '/' });
-    } catch (error) {
+    } catch  {
       setError('Google sign-in failed');
       setIsLoading(false);
     }
@@ -37,7 +37,7 @@ const LoginPage = () => {
       } else {
         window.location.href = '/'; // Redirect on success
       }
-    } catch (error) {
+    } catch {
       setError('An error occurred during login');
     } finally {
       setIsLoading(false);
