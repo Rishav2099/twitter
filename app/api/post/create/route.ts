@@ -5,6 +5,7 @@ import Post, { IPost } from "@/models/Post.model";
 import { uploadImage } from "@/lib/cloudinary";
 import { NextRequest, NextResponse } from "next/server";
 import User from "@/models/User.model";
+import { ObjectId } from "mongodb";
 
 
 
