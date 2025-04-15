@@ -1,13 +1,19 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export interface PopulatedUser {
+  _id: string;
+  name: string;
+  image?: string;
+}
+
 export interface IPost extends Document {
   _id: string;
   caption?: string;
   imageUrl?: string;
-  user: string | mongoose.Types.ObjectId; // Store as ObjectId, populated as { _id, name, image }
+  user: string | mongoose.Types.ObjectId | PopulatedUser; // Stored as ObjectId, populated as PopulatedUser
   likes: string[] | mongoose.Types.ObjectId[];
   comments: {
-    user: string | mongoose.Types.ObjectId;
+    user: string | mongoose.Types.ObjectId | PopulatedUser;
     text: string;
     createdAt?: Date;
   }[];

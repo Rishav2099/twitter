@@ -4,17 +4,18 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { FaImage, FaHeart, FaComment } from "react-icons/fa";
 import Image from "next/image";
-import { IPost } from "@/models/Post.model";
+import { IPost, PopulatedUser } from "@/models/Post.model";
+import { isObjectIdOrHexString } from "mongoose"; // Explicit import
 
 export default function Test() {
   const { data: session } = useSession();
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [posts, setPosts] = useState<IPost[]>([]);
-  const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({}); // Comment input per post
-  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({}); // Toggle comment section per post
+  const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({});
+  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [loading , setLoading ] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,8 +51,8 @@ export default function Test() {
   };
 
   const fetchPosts = async () => {
-  try {
-    setLoading(true)
+    try {
+      setLoading(true);
       const res = await fetch("/api/post/read");
       if (res.ok) {
         const data = await res.json();
@@ -60,11 +61,11 @@ export default function Test() {
       } else {
         alert("Failed to fetch posts");
       }
-  } catch (error) {
-    console.log(error)
-  } finally{
-    setLoading(false)
-  }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -131,8 +132,8 @@ export default function Test() {
             post._id === postId ? updatedPost.post : post
           )
         );
-        setCommentInputs((prev) => ({ ...prev, [postId]: "" })); // Clear input
-        setShowComments((prev) => ({ ...prev, [postId]: true })); // Keep section open after comment
+        setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
+        setShowComments((prev) => ({ ...prev, [postId]: true }));
       } else {
         const errorData = await res.json();
         alert(`Failed to add comment: ${errorData.error}`);
@@ -156,10 +157,13 @@ export default function Test() {
     return post.likes.some((like) => like.toString() === session.user.id);
   };
 
+  // Type guard to check if user is PopulatedUser
+  const isPopulatedUser = (user: IPost["user"]): user is PopulatedUser => {
+    return typeof user !== "string" && !isObjectIdOrHexString(user);
+  };
+
   if (loading) {
-    <div>
-      Loading...
-    </div>
+    return <div>Loading...</div>;
   }
 
   if (session) {
@@ -209,22 +213,35 @@ export default function Test() {
               className="py-3 px-3 rounded-lg border flex gap-2 border-gray-700"
             >
               <div className="user-img w-[40px] h-[40px] relative flex-shrink-0">
-                <Link href={`/user/${post.user?._id}`}>
-                <Image
-                  src={post.user?.image || "/DefaultAvatar.png"}
-                  alt="Profile"
-                  fill
-                  className="rounded-full object-cover"
-                  />
+                {isPopulatedUser(post.user) ? (
+                  <Link href={`/user/${post.user._id}`}>
+                    <Image
+                      src={post.user.image || "/DefaultAvatar.png"}
+                      alt="Profile"
+                      fill
+                      className="rounded-full object-cover"
+                    />
                   </Link>
+                ) : (
+                  <Image
+                    src="/DefaultAvatar.png"
+                    alt="Profile"
+                    fill
+                    className="rounded-full object-cover"
+                  />
+                )}
               </div>
               <div className="content flex-1 flex flex-col">
                 <div className="user-name-date flex justify-between mb-1">
-                  <Link href={`/user/${post.user?._id}`}>
-                  <span className="text-white font-semibold">
-                    {post.user?.name || "Unknown User"}
-                  </span>
-                  </Link>
+                  {isPopulatedUser(post.user) ? (
+                    <Link href={`/user/${post.user._id}`}>
+                      <span className="text-white font-semibold">
+                        {post.user.name || "Unknown User"}
+                      </span>
+                    </Link>
+                  ) : (
+                    <span className="text-white font-semibold">Unknown User</span>
+                  )}
                   <span className="text-gray-400 text-sm pr-3">
                     {formatDate(post.createdAt)}
                   </span>
@@ -261,7 +278,6 @@ export default function Test() {
                     <span className="text-sm">{post.comments.length}</span>
                   </div>
                 </div>
-                {/* Comment Section (Input + List) */}
                 {showComments[post._id] && (
                   <div className="comment-section">
                     <form
@@ -285,15 +301,33 @@ export default function Test() {
                     <div className="comments space-y-1">
                       {post.comments.length > 0 ? (
                         post.comments.map((comment, index) => (
-                          <div key={index} className="text-sm border-b border-gray-500 py-2 flex items-center gap-1 text-gray-300">
+                          <div
+                            key={index}
+                            className="text-sm border-b border-gray-500 py-2 flex items-center gap-1 text-gray-300"
+                          >
                             <span>
                               <div className="relative w-[40px] h-[40px]">
-
-                              <Image src={comment.user?.image || '/DefaultAvatar.png'} alt="User-Image" className="rounded-full object-cover" fill />
+                                {isPopulatedUser(comment.user) ? (
+                                  <Image
+                                    src={comment.user.image || "/DefaultAvatar.png"}
+                                    alt="User-Image"
+                                    className="rounded-full object-cover"
+                                    fill
+                                  />
+                                ) : (
+                                  <Image
+                                    src="/DefaultAvatar.png"
+                                    alt="User-Image"
+                                    className="rounded-full object-cover"
+                                    fill
+                                  />
+                                )}
                               </div>
                             </span>
                             <span className="font-semibold">
-                              {comment.user?.name || "Unknown User"}
+                              {isPopulatedUser(comment.user)
+                                ? comment.user.name || "Unknown User"
+                                : "Unknown User"}
                             </span>
                             <span> - {comment.text}</span>
                             <span className="text-gray-500 ml-1">
