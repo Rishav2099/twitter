@@ -34,7 +34,7 @@ const RegisterPage = () => {
       // Redirect to login page after successful registration
       router.push('/login');
     } catch {
-      setError(error.message || 'An error occurred during registration');
+      setError( 'An error occurred during registration');
     } finally {
       setIsLoading(false);
     }
