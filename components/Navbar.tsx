@@ -41,8 +41,10 @@ const Navbar = () => {
     <>
       {/* Mobile Header */}
       <header className="md:hidden sticky top-0 bg-opacity-5 bg-[#0000006e] backdrop-blur-sm border-b border-gray-800 z-50 h-[var(--mobile-nav-height)] flex items-center justify-between px-4">
-        <div className="text-xl font-bold">
-          <span>Logo</span>
+        <div className="text-xl font-bold ">
+          <Link href='/'>
+          <Image src={'/twitter-logo.png'} alt="logo" width={60}height={60}/>
+          </Link>
         </div>
       </header>
 
@@ -53,7 +55,8 @@ const Navbar = () => {
             href="/"
             className="text-2xl font-bold mb-12 text-white hover:text-gray-300 transition-colors"
           >
-            Logo
+                      <Image src={'/twitter-logo.png'} alt="logo" width={80}height={80}/>
+
           </Link>
           <ul className="flex flex-col items-center gap-6 w-full px-2">
             {navItems.map((item) => (
