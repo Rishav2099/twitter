@@ -5,23 +5,26 @@ import Post from "@/models/Post.model";
 import { authOption } from "@/lib/auth";
 import connectToDatabase from "@/lib/db";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await connectToDatabase();
     const session = await getServerSession(authOption);
-    if (!session || !session.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const userId = session.user.id;
-    const postId = params.id;
 
-    if (!mongoose.Types.ObjectId.isValid(postId)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
     }
 
-    const post = await Post.findById(postId)
+    const post = await Post.findById(id)
       .populate("user", "name image")
-      .populate("comments.user", "name image"); // Populate comments.user
+      .populate("comments.user", "name image");
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
@@ -38,8 +41,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     await post.save();
 
-    // Re-fetch with populated comments.user after save
-    const updatedPost = await Post.findById(postId)
+    // Re-fetch with populated data
+    const updatedPost = await Post.findById(id)
       .populate("user", "name image")
       .populate("comments.user", "name image");
 
@@ -50,18 +53,19 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await connectToDatabase();
     const session = await getServerSession(authOption);
-    if (!session || !session.user) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { id } = await params;
     const userId = session.user.id;
-    const postId = params.id;
     const { text } = await req.json();
 
-    if (!mongoose.Types.ObjectId.isValid(postId)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
     }
 
@@ -69,9 +73,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ error: "Comment text is required" }, { status: 400 });
     }
 
-    const post = await Post.findById(postId)
+    const post = await Post.findById(id)
       .populate("user", "name image")
-      .populate("comments.user", "name image"); // Populate existing comments.user
+      .populate("comments.user", "name image");
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
@@ -85,8 +89,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     post.comments.push(newComment);
     await post.save();
 
-    // Re-fetch with populated comments.user to include new comment
-    const updatedPost = await Post.findById(postId)
+    // Re-fetch with populated data
+    const updatedPost = await Post.findById(id)
       .populate("user", "name image")
       .populate("comments.user", "name image");
 
@@ -97,17 +101,34 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 }
 
-export async function DELETE(req :NextRequest, {params} : {params: {id: string}} ) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    await connectToDatabase()
-    const id = params.id
-    const post = await Post.findByIdAndDelete(id)
-    if(!post) {
-      return NextResponse.json({message: 'no post found', status: 404})
+    await connectToDatabase();
+    const session = await getServerSession(authOption);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    return NextResponse.json({message: 'post deleted successfully'})
+    const { id } = await params;
+    const userId = session.user.id;
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid post ID" }, { status: 400 });
+    }
+
+    const post = await Post.findById(id);
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    // Ensure only the post owner can delete
+    if (post.user.toString() !== userId) {
+      return NextResponse.json({ error: "Forbidden: You cannot delete this post" }, { status: 403 });
+    }
+
+    await Post.findByIdAndDelete(id);
+
+    return NextResponse.json({ message: "Post deleted successfully" }, { status: 200 });
   } catch (error) {
     console.error("Error deleting post:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

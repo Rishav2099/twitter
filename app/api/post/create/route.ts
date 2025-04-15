@@ -6,17 +6,7 @@ import { uploadImage } from "@/lib/cloudinary";
 import { NextRequest, NextResponse } from "next/server";
 import User from "@/models/User.model";
 
-// Extend NextAuth session type
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-    };
-  }
-}
+
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOption);
@@ -41,7 +31,7 @@ export async function POST(req: NextRequest) {
 
     // Prepare post data
     const postData: Partial<IPost> = {
-      user: session.user.id, // string (ObjectId)
+      user: ObjectId, // string (ObjectId)
       comments: [],
       likes: [],
     };
