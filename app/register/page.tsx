@@ -45,7 +45,7 @@ const RegisterPage = () => {
       setIsLoading(true);
       // Trigger Google sign-in, redirect to home page after success
       await signIn('google', { callbackUrl: '/' });
-    } catch (error) {
+    } catch  {
       setError('Google registration failed');
       setIsLoading(false);
     }

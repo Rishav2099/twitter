@@ -75,7 +75,7 @@ const ProfilePage = () => {
       const data = await res.json();
       setFollowerCount(data.followerCount)
       setFollowingCount(data.followingCount)
-    } catch (error) {
+    } catch {
       console.error("Error checking follow:");
     }
   };
@@ -83,7 +83,7 @@ const ProfilePage = () => {
   useEffect(() => {
     if (userId) fetchPosts();
     checkFollow()
-  }, [userId]);
+  }, []);
 
   const hasLiked = (post: Post) => {
     return post.likes.includes(userId || "");
