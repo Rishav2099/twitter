@@ -4,51 +4,79 @@ import Account from "@/components/Account";
 import React, { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 
+interface User {
+  name: string;
+  image: string;
+  _id: string;
+}
+
 const Page = () => {
-
-  interface User{
-    name: string;
-    image: string;
-    _id: string;
-  }
-
-
-
   const [searchAll, setSearchAll] = useState(false);
   const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [searchName, setSearchName] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSearch = () => {
-    alert("Searching!");
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchName.trim()) {
+      setError("Please enter a name to search");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/user/search?name=${encodeURIComponent(searchName)}`);
+      if (!res.ok) {
+        throw new Error("Error fetching users");
+      }
+      const data = await res.json();
+      setUsers(data.users || []);
+      if (!data.users.length) {
+        setError("No users found");
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+      setError("Failed to fetch users");
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // fetch all users
   const fetchAllUsers = async () => {
+    setLoading(true);
     try {
-      const res = await fetch("api/user");
+      const res = await fetch("/api/user");
       if (!res.ok) {
-        console.log("failed to fetch users", res.status);
-        return;
+        throw new Error("Failed to fetch users");
       }
       const data = await res.json();
       setAllUsers(data.users || []);
     } catch (error) {
       console.error("Error fetching users:", error);
+      setAllUsers([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAllUsers()
-  }, [])
-  
+    fetchAllUsers();
+  }, []);
 
   return (
-    <>
+    <div>
       <div className="search flex justify-center mt-5">
         <form onSubmit={handleSearch} className="relative w-[60vw] flex">
           <input
             className="text-white border w-full pr-4 pl-3 py-2 rounded-l-full border-gray-500 bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 border-r-0"
             type="text"
             placeholder="Search"
+            value={searchName}
+            onChange={(e) => setSearchName(e.target.value)}
           />
           <button
             type="submit"
@@ -58,18 +86,18 @@ const Page = () => {
           </button>
         </form>
       </div>
-      <div className="options flex border-b  md:mt-3 md:ml-20  py-5 justify-around">
+      <div className="options flex border-b md:mt-3 md:ml-20 py-5 justify-around">
         <div
-          onClick={() => setSearchAll((prev) => !prev)}
+          onClick={() => setSearchAll(false)}
           className={`search cursor-pointer select-none px-5 py-2 rounded-full hover:bg-neutral-500 ${
             !searchAll ? "border" : "border-none"
           }`}
         >
           Search
         </div>
-        <div className="line w-0.5  bg-white "></div>
+        <div className="line w-0.5 bg-white"></div>
         <div
-          onClick={() => setSearchAll((prev) => !prev)}
+          onClick={() => setSearchAll(true)}
           className={`all cursor-pointer select-none border-white px-5 py-2 rounded-full hover:bg-neutral-500 ${
             searchAll ? "border" : "border-none"
           }`}
@@ -78,26 +106,42 @@ const Page = () => {
         </div>
       </div>
       <div className="results text-center mt-5 text-white">
+        {loading && <p>Loading...</p>}
+        {error && <p className="text-red-500">{error}</p>}
         {!searchAll ? (
-          <div className="all-accounts flex-col flex gap-5"><p>Search results coming soon...</p></div>
-        ) : (
           <div className="all-accounts flex-col flex gap-5">
-          {allUsers.length > 0 ? (
-              allUsers.map((user, index) => (
+            {users.length > 0 && !loading ? (
+              users.map((user) => (
                 <Account
-                  key={index}
+                  key={user._id}
                   src={user.image || "/defaultAvatar.png"}
                   name={user.name}
                   id={user._id}
                 />
               ))
             ) : (
-              <p>No users found</p>
+              !loading && !error && <p>No users found</p>
+            )}
+          </div>
+        ) : (
+          <div className="all-accounts flex-col flex gap-5">
+            {allUsers.length > 0 && !loading ? (
+              allUsers.map((user) => (
+                <Account
+                  key={user._id}
+                  src={user.image || "/defaultAvatar.png"}
+                  name={user.name}
+                  id={user._id}
+                />
+              ))
+            ) : (
+              !loading && <p>No users found</p>
             )}
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
+
 export default Page;
