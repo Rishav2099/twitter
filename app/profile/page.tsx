@@ -158,7 +158,7 @@ const ProfilePage = () => {
             <p className="text-[#6c7075]">
               @{session?.user.name?.toLowerCase().replace(/\s/g, "")}
             </p>
-            <p className="mt-3">{session?.user.bio || "No bio yet"}</p>
+            <p className="mt-3">{"No bio yet"}</p>
             <div className="flex gap-3 text-sm mt-2">
               <span className="text-white">
                 {followingCount || 0}{" "}

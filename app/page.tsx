@@ -14,6 +14,7 @@ export default function Test() {
   const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({}); // Comment input per post
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({}); // Toggle comment section per post
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [loading , setLoading ] = useState(true)
 
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,14 +50,21 @@ export default function Test() {
   };
 
   const fetchPosts = async () => {
-    const res = await fetch("/api/post/read");
-    if (res.ok) {
-      const data = await res.json();
-      setPosts(data.posts);
-      console.log(data.posts);
-    } else {
-      alert("Failed to fetch posts");
-    }
+  try {
+    setLoading(true)
+      const res = await fetch("/api/post/read");
+      if (res.ok) {
+        const data = await res.json();
+        setPosts(data.posts);
+        console.log(data.posts);
+      } else {
+        alert("Failed to fetch posts");
+      }
+  } catch (error) {
+    console.log(error)
+  } finally{
+    setLoading(false)
+  }
   };
 
   useEffect(() => {
@@ -147,6 +155,12 @@ export default function Test() {
     if (!session?.user?.id) return false;
     return post.likes.some((like) => like.toString() === session.user.id);
   };
+
+  if (loading) {
+    <div>
+      Loading...
+    </div>
+  }
 
   if (session) {
     return (

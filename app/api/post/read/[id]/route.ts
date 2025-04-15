@@ -7,7 +7,7 @@ export async function GET (req: NextRequest, {params}: {params: {id: string}}) {
     await connectToDatabase()
      const userId = params.id
      const user  = await User.findById(userId).populate('posts')
-     console.log(user);
+  
      
  
      // check if user exist
