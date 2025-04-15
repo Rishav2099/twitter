@@ -5,10 +5,10 @@ import { uploadImage } from "@/lib/cloudinary";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } =  await params;
     await connectToDatabase();
     const user = await User.findById(id).populate('posts')
 
@@ -27,7 +27,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectToDatabase();
