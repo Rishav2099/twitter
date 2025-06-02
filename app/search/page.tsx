@@ -110,10 +110,10 @@ const Page = () => {
       </div>
       <div className="results text-center mt-5 text-white">
         {loading && (
-          <>
-            <Loader2 className="animate-spin w-5 h-5 text-white" />
+          <div className="flex items-center justify-center">
+            <Loader2 className="animate-spin w-8 h-8 text-white" />
             <p>Loading...</p>
-          </>
+          </div>
         )}
         {error && <p className="text-red-500">{error}</p>}
         {!searchAll ? (
