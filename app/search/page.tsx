@@ -1,6 +1,7 @@
 "use client";
 
 import Account from "@/components/Account";
+import { Loader2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 
@@ -28,7 +29,9 @@ const Page = () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/user/search?name=${encodeURIComponent(searchName)}`);
+      const res = await fetch(
+        `/api/user/search?name=${encodeURIComponent(searchName)}`
+      );
       if (!res.ok) {
         throw new Error("Error fetching users");
       }
@@ -106,37 +109,38 @@ const Page = () => {
         </div>
       </div>
       <div className="results text-center mt-5 text-white">
-        {loading && <p>Loading...</p>}
+        {loading && (
+          <>
+            <Loader2 className="animate-spin w-5 h-5 text-white" />
+            <p>Loading...</p>
+          </>
+        )}
         {error && <p className="text-red-500">{error}</p>}
         {!searchAll ? (
           <div className="all-accounts flex-col flex gap-5">
-            {users.length > 0 && !loading ? (
-              users.map((user) => (
-                <Account
-                  key={user._id}
-                  src={user.image || "/defaultAvatar.png"}
-                  name={user.name}
-                  id={user._id}
-                />
-              ))
-            ) : (
-              !loading && !error && <p>No users found</p>
-            )}
+            {users.length > 0 && !loading
+              ? users.map((user) => (
+                  <Account
+                    key={user._id}
+                    src={user.image || "/defaultAvatar.png"}
+                    name={user.name}
+                    id={user._id}
+                  />
+                ))
+              : !loading && !error && <p>No users found</p>}
           </div>
         ) : (
           <div className="all-accounts flex-col flex gap-5 mb-10">
-            {allUsers.length > 0 && !loading ? (
-              allUsers.map((user) => (
-                <Account
-                  key={user._id}
-                  src={user.image || "/defaultAvatar.png"}
-                  name={user.name}
-                  id={user._id}
-                />
-              ))
-            ) : (
-              !loading && <p>No users found</p>
-            )}
+            {allUsers.length > 0 && !loading
+              ? allUsers.map((user) => (
+                  <Account
+                    key={user._id}
+                    src={user.image || "/defaultAvatar.png"}
+                    name={user.name}
+                    id={user._id}
+                  />
+                ))
+              : !loading && <p>No users found</p>}
           </div>
         )}
       </div>
