@@ -58,6 +58,8 @@ const Page = () => {
         throw new Error("Failed to fetch users");
       }
       const data = await res.json();
+      console.log(data);
+      
       setAllUsers(data.users || []);
     } catch (error) {
       console.error("Error fetching users:", error);

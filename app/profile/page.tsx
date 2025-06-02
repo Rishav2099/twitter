@@ -147,7 +147,7 @@ const ProfilePage = () => {
         <div className="flex flex-col gap-6">
           <div className="relative w-32 h-32 md:w-40 md:h-40">
             <Image
-              src={session?.user.image || "/defaultAvatar.png"}
+              src={session?.user.image || "/DefaultAvatar.png"}
               alt="Profile"
               fill
               className="rounded-full object-cover"
@@ -194,7 +194,7 @@ const ProfilePage = () => {
               >
                 <div className="relative w-10 h-10 flex-shrink-0">
                   <Image
-                    src={session?.user.image || "/defaultAvatar.png"}
+                    src={session?.user.image || "/DefaultAvatar.png"}
                     alt="Profile"
                     fill
                     className="rounded-full object-cover"
