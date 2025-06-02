@@ -36,6 +36,7 @@ const Page = () => {
         throw new Error("Error fetching users");
       }
       const data = await res.json();
+      console.log(data)
       setUsers(data.users || []);
       if (!data.users.length) {
         setError("No users found");
@@ -110,7 +111,7 @@ const Page = () => {
       </div>
       <div className="results text-center mt-5 text-white">
         {loading && (
-          <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center">
             <Loader2 className="animate-spin w-8 h-8 text-white" />
             <p>Loading...</p>
           </div>
@@ -122,7 +123,7 @@ const Page = () => {
               ? users.map((user) => (
                   <Account
                     key={user._id}
-                    src={user.image || "/defaultAvatar.png"}
+                    src={user.image || "/DefaultAvatar.png"}
                     name={user.name}
                     id={user._id}
                   />
