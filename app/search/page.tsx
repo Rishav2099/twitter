@@ -130,7 +130,7 @@ const Page = () => {
               : !loading && !error && <p>No users found</p>}
           </div>
         ) : (
-          <div className="all-accounts flex-col flex gap-5 mb-10">
+          <div className="all-accounts flex-col flex gap-5 mb-12">
             {allUsers.length > 0 && !loading
               ? allUsers.map((user) => (
                   <Account
