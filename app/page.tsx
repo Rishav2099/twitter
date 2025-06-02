@@ -31,10 +31,15 @@ export default function Test() {
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [posts, setPosts] = useState<IPost[]>([]);
-  const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({});
-  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
+  const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const [showComments, setShowComments] = useState<{ [key: string]: boolean }>(
+    {}
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
+  const [submiting, setSubmiting] = useState<boolean>(false);
 
   const handlePostSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +111,10 @@ export default function Test() {
       return `${diffHours}h`;
     }
 
-    const options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+    };
     if (postDate.getFullYear() !== now.getFullYear()) {
       options.year = "numeric";
     }
@@ -122,9 +130,7 @@ export default function Test() {
       if (res.ok) {
         const updatedPost = await res.json();
         setPosts((prevPosts) =>
-          prevPosts.map((post) =>
-            post._id === id ? updatedPost.post : post
-          )
+          prevPosts.map((post) => (post._id === id ? updatedPost.post : post))
         );
       } else {
         const errorData = await res.json();
@@ -142,6 +148,7 @@ export default function Test() {
     if (!text) return;
 
     try {
+      setSubmiting(true);
       const res = await fetch(`/api/post/${postId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -164,6 +171,8 @@ export default function Test() {
     } catch (error) {
       console.error("Error adding comment:", error);
       alert("An error occurred while adding the comment");
+    } finally {
+      setSubmiting(false);
     }
   };
 
@@ -187,7 +196,10 @@ export default function Test() {
   if (session) {
     return (
       <div className="pt-5 px-4 md:px-16 pb-28 md:pb-5 max-w-2xl mx-auto">
-        <form onSubmit={handlePostSubmit} className="mb-6 border-b border-gray-800 pb-1">
+        <form
+          onSubmit={handlePostSubmit}
+          className="mb-6 border-b border-gray-800 pb-1"
+        >
           <textarea
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
@@ -213,7 +225,10 @@ export default function Test() {
                   className="object-cover rounded"
                 />
               ) : (
-                <FaImage size={24} className="text-gray-700 hover:text-gray-200" />
+                <FaImage
+                  size={24}
+                  className="text-gray-700 hover:text-gray-200"
+                />
               )}
             </div>
             <button
@@ -269,7 +284,9 @@ export default function Test() {
                   <div
                     onClick={() => handleLike(post._id)}
                     className={`like closesocket flex items-center gap-1 cursor-pointer ${
-                      hasLiked(post) ? "text-red-500" : "text-gray-400 hover:text-red-500"
+                      hasLiked(post)
+                        ? "text-red-500"
+                        : "text-gray-400 hover:text-red-500"
                     }`}
                   >
                     <FaHeart size={16} />
@@ -292,13 +309,16 @@ export default function Test() {
                       <input
                         type="text"
                         value={commentInputs[post._id] || ""}
-                        onChange={(e) => handleCommentChange(post._id, e.target.value)}
+                        onChange={(e) =>
+                          handleCommentChange(post._id, e.target.value)
+                        }
                         placeholder="Post your reply"
                         className="w-full p-2 bg-gray-900 text-white border border-gray-700 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <button
+                        disabled={submiting}
                         type="submit"
-                        className="bg-blue-600 text-white font-bold px-3 py-1 rounded-full text-sm hover:bg-blue-700"
+                        className="bg-blue-600 disabled:bg-blue-900 text-white font-bold px-3 py-1 rounded-full text-sm hover:bg-blue-700"
                       >
                         Reply
                       </button>
@@ -313,7 +333,9 @@ export default function Test() {
                             <span>
                               <div className="relative w-[40px] h-[40px]">
                                 <Image
-                                  src={comment.user.image || "/DefaultAvatar.png"}
+                                  src={
+                                    comment.user.image || "/DefaultAvatar.png"
+                                  }
                                   alt="User-Image"
                                   className="rounded-full object-cover"
                                   fill
@@ -350,7 +372,9 @@ export default function Test() {
           Welcome to Twitter
         </h1>
         <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-          Twitter is your go-to platform for real-time conversations, sharing ideas, and staying connected with the world. Tweet your thoughts, follow trends, and join the global community.
+          Twitter is your go-to platform for real-time conversations, sharing
+          ideas, and staying connected with the world. Tweet your thoughts,
+          follow trends, and join the global community.
         </p>
         <div className="flex justify-center gap-4">
           <Link href="/login">
@@ -365,9 +389,7 @@ export default function Test() {
           </Link>
         </div>
       </div>
-      <footer className="text-gray-500 text-sm">
-        Made by Rishav
-      </footer>
+      <footer className="text-gray-500 text-sm">Made by Rishav</footer>
     </div>
   );
 }

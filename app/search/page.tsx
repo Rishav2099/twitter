@@ -36,7 +36,6 @@ const Page = () => {
         throw new Error("Error fetching users");
       }
       const data = await res.json();
-      console.log(data);
       setUsers(data.users || []);
       if (!data.users.length) {
         setError("No users found");
@@ -58,7 +57,6 @@ const Page = () => {
         throw new Error("Failed to fetch users");
       }
       const data = await res.json();
-      console.log(data);
 
       setAllUsers(data.users || []);
     } catch (error) {
