@@ -311,7 +311,7 @@ const ProfilePage = () => {
                             >
                               <div className="relative w-10 h-10">
                                 <Image
-                                  src={c.user.image || "/defaultAvatar.png"}
+                                  src={c.user.image || "/DefaultAvatar.png"}
                                   alt="User"
                                   fill
                                   className="rounded-full object-cover"

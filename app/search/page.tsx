@@ -36,7 +36,7 @@ const Page = () => {
         throw new Error("Error fetching users");
       }
       const data = await res.json();
-      console.log(data)
+      console.log(data);
       setUsers(data.users || []);
       if (!data.users.length) {
         setError("No users found");
@@ -59,7 +59,7 @@ const Page = () => {
       }
       const data = await res.json();
       console.log(data);
-      
+
       setAllUsers(data.users || []);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -138,7 +138,7 @@ const Page = () => {
               ? allUsers.map((user) => (
                   <Account
                     key={user._id}
-                    src={user.image || "/defaultAvatar.png"}
+                    src={user.image || "/DefaultAvatar.png"}
                     name={user.name}
                     id={user._id}
                   />
