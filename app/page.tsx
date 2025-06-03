@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { FaImage, FaHeart, FaComment } from "react-icons/fa";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
+import { usePostStore } from "@/stores/postStore";
 
 // Frontend-specific IPost type
 interface PopulatedUser {
@@ -28,21 +29,20 @@ interface IPost {
 }
 
 export default function Test() {
-  const { data: session, status } = useSession(); // Add status
+  const { data: session, status } = useSession();
   const [caption, setCaption] = useState("");
   const [image, setImage] = useState<string | null>(null);
-  const [posts, setPosts] = useState<IPost[]>([]);
   const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({});
   const [showComments, setShowComments] = useState<{ [key: string]: boolean }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState<boolean>(false); // Fixed typo: submiting -> submitting
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const { posts, lastFetched, fetchPosts, setPosts } = usePostStore();
 
   const handlePostSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!caption.trim() && !image) return;
-
     try {
+      e.preventDefault();
+      if (!caption.trim() && !image) return;
+
       setSubmitting(true);
       const res = await fetch("/api/post/create", {
         method: "POST",
@@ -53,14 +53,12 @@ export default function Test() {
       if (res.ok) {
         setCaption("");
         setImage(null);
-        fetchPosts();
-        alert("Post created!");
+        fetchPosts(); // Refresh posts after creating new post
       } else {
-        alert("Failed to create post");
+        console.log("Failed to create post");
       }
     } catch (error) {
-      console.error("Error creating post:", error);
-      alert("An error occurred while creating the post");
+      console.error("Error:", error);
     } finally {
       setSubmitting(false);
     }
@@ -79,32 +77,11 @@ export default function Test() {
     fileInputRef.current?.click();
   };
 
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/post/read");
-      if (res.ok) {
-        const data = await res.json();
-        setPosts(data.posts);
-        console.log(data.posts);
-      } else {
-        alert("Failed to fetch posts");
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (status === "authenticated") {
+    if (status === "authenticated" && !lastFetched) {
       fetchPosts();
-    } else if (status === "unauthenticated") {
-      setLoading(false);
     }
-    // No action for status === "loading"
-  }, [status]);
+  }, [status, lastFetched, fetchPosts]);
 
   const formatDate = (createdAt: string | Date) => {
     const now = new Date();
@@ -132,27 +109,24 @@ export default function Test() {
 
       if (res.ok) {
         const updatedPost = await res.json();
-        setPosts((prevPosts) =>
-          prevPosts.map((post) => (post._id === id ? updatedPost.post : post))
-        );
+        setPosts(posts.map((post) => (post._id === id ? updatedPost.post : post)));
       } else {
         const errorData = await res.json();
-        alert(`Failed to like post: ${errorData.error}`);
+        console.log(`Failed to like post: ${errorData.error}`);
       }
     } catch (error) {
-      console.error("Error liking post:", error);
-      alert("An error occurred while liking the post");
+      console.error("Error:", error);
     }
   };
 
   const handleCommentSubmit = async (postId: string, e: React.FormEvent) => {
-    e.preventDefault();
-    const text = commentInputs[postId]?.trim();
-    if (!text) return;
-
     try {
+      e.preventDefault();
+      const text = commentInputs[postId]?.trim();
+      if (!text) return;
+
       setSubmitting(true);
-      const res = await fetch(`/api/post/${postId}`, { // Fixed: postId instead of id
+      const res = await fetch(`/api/post/${postId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
@@ -160,20 +134,15 @@ export default function Test() {
 
       if (res.ok) {
         const updatedPost = await res.json();
-        setPosts((prevPosts) =>
-          prevPosts.map((post) =>
-            post._id === postId ? updatedPost.post : post
-          )
-        );
+        setPosts(posts.map((post) => (post._id === postId ? updatedPost.post : post)));
         setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
         setShowComments((prev) => ({ ...prev, [postId]: true }));
       } else {
         const errorData = await res.json();
-        alert(`Failed to add comment: ${errorData.error}`);
+        console.log(`Failed to add comment: ${errorData.error}`);
       }
     } catch (error) {
-      console.error("Error adding comment:", error);
-      alert("An error occurred while adding the comment");
+      console.error("Error:", error);
     } finally {
       setSubmitting(false);
     }
@@ -187,12 +156,11 @@ export default function Test() {
     setShowComments((prev) => ({ ...prev, [postId]: !prev[postId] }));
   };
 
-  const hasLiked = (post: IPost) => {
-    if (!session?.user?.id) return false;
-    return post.likes.some((like) => like.toString() === session.user.id);
+  const hasLiked = (post: IPost): boolean => {
+    if (!session?.user?.id || !post?.likes) return false;
+    return post.likes.includes(session.user.id);
   };
 
-  // Handle session loading state
   if (status === "loading") {
     return (
       <div className="flex flex-col h-full w-full items-center justify-center">
@@ -202,7 +170,6 @@ export default function Test() {
     );
   }
 
-  // Unauthenticated state
   if (status === "unauthenticated") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-800 to-black flex flex-col items-center justify-between px-4 py-8">
@@ -233,7 +200,6 @@ export default function Test() {
     );
   }
 
-  // Authenticated state
   return (
     <div className="pt-5 px-4 md:px-16 pb-28 md:pb-5 max-w-2xl mx-auto">
       <form onSubmit={handlePostSubmit} className="mb-6 border-b border-gray-800 pb-1">
@@ -274,7 +240,7 @@ export default function Test() {
           </button>
         </div>
       </form>
-      {loading ? (
+      {posts.length === 0 && !lastFetched ? (
         <div className="flex flex-col h-full w-full items-center justify-center">
           <Loader2 className="h-8 w-8 text-white animate-spin" />
           <p>Loading posts...</p>
@@ -324,7 +290,7 @@ export default function Test() {
                 <div className="engagement flex gap-6 mb-2">
                   <div
                     onClick={() => handleLike(post._id)}
-                    className={`like closesocket flex items-center gap-1 cursor-pointer ${
+                    className={`like flex items-center gap-1 cursor-pointer ${
                       hasLiked(post) ? "text-red-500" : "text-gray-400 hover:text-red-500"
                     }`}
                   >
