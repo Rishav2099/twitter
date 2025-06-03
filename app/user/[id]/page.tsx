@@ -184,7 +184,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
           {/* Profile Image */}
           <div className="w-32 h-32 md:w-40 md:h-40 relative">
             <Image
-              src={user.image || "/defaultAvatar.png"}
+              src={user.image || "/DefaultAvatar.png"}
               alt={user.name}
               fill
               className="rounded-full object-cover"
@@ -236,7 +236,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
                     <div className="user-img w-[40px] h-[40px] relative flex-shrink-0">
                       <Link href={`/user/${id}`}>
                         <Image
-                          src={user?.image || "/defaultAvatar.png"}
+                          src={user?.image || "/DefaultAvatar.png"}
                           alt="Profile"
                           fill
                           className="rounded-full object-cover"
@@ -316,7 +316,7 @@ const Page = ({ params }: { params: Promise<{ id: string }> }) => {
                                   <span>
                                     <div className="relative w-[40px] h-[40px]">
                                       <Image
-                                        src={comment.user?.image || "/defaultAvatar.png"}
+                                        src={comment.user?.image || "/DefaultAvatar.png"}
                                         alt="User-Image"
                                         className="rounded-full object-cover"
                                         fill
